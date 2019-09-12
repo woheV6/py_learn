@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel='icon' href="{{url_for('static',filename='favicon.png')}}">
+    <link rel="stylesheet" href='{{url_for("static",filename="css/index.css")}}' type="text/css">
     <title>{{name}}'s watchlist</title>
 </head>
 <body>
-    <h2>{{name}}'s watchlist</h2>
+    <h2>
+        <img  class='avatar' src="{{url_for('static',filename='snake.png')}}">
+        {{name}}'s watchlist
+    </h2>
     <p>{{movies|length}} titles</p>
-    <ul>
+    <ul class="movie-list">
         {% for movie in movies%}
         <li>
             {{movie.title}} - {{movie.year}}
@@ -19,5 +24,6 @@
     <footer>
         <small>&copy 2018<a href="www.baidu.com">hello falsk</a></small>
     </footer>
+    <img class="totoro" src='{{url_for("static",filename="loong.png")}}'>
 </body>
 </html>
