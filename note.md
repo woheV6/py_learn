@@ -20,3 +20,5 @@
      - source ~/.bash_profile     source ~/.bashrc
 # 安装pipenv
 - brew install pipenv
+
+# api文档生成bao apidoc
