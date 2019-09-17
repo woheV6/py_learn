@@ -1,29 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel='icon' href="{{url_for('static',filename='favicon.png')}}">
-    <link rel="stylesheet" href='{{url_for("static",filename="css/index.css")}}' type="text/css">
-    <title>{{user.name}}'s watchlist</title>
-</head>
-<body>
-    <h2>
-        <img  class='avatar' src="{{url_for('static',filename='snake.png')}}">
-        {{user.name}}'s watchlist
-    </h2>
-    <p>{{movies|length}} titles</p>
-    <ul class="movie-list">
+
+{% extends 'base.html'%}
+{% block content %}
+<form method="post">
+    name <input type="text" name="title" autocomplete="off" required>
+    year <input type="text" name="year" autocomplete="off" required>
+    <input class="but" type="submit" name='submit' value="提交">
+</form>
+<ul class="movie-list">
         {% for movie in movies%}
         <li>
-            {{movie.title}} - {{movie.year}}
+          <span> {{movie.title}} - {{movie.year}}</span> 
+          <span><a  target="_blank" href="https://movie.douban.com/subject_search?search_text={{movie.title}}">豆瓣搜索</a></span>
+          {% if current_user.is_authenticated%}
+          <span><a  target="_blank" href="{{url_for('edit',movie_id=movie.id)}}">edit</a></span>
+          <form class="inline-form" method="post" action="{{ url_for('delete', movie_id=movie.id) }}">
+              <input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+          </form>
+          {%endif%}
         </li>
         {%endfor%}
     </ul>
-    <footer>
-        <small>&copy 2018<a href="www.baidu.com">hello falsk</a></small>
-    </footer>
-    <img class="totoro" src='{{url_for("static",filename="loong.png")}}'>
-</body>
-</html>
+    <h1> {{ current_user.is_authenticated}}</h1>
+{% endblock %}
