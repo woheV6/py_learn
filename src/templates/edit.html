@@ -1,8 +1,0 @@
-{% extends 'base.html' %}
-{% block content %}
-<form method="post">
-    name <input value='{{movie.title}}' type="text" name="title" autocomplete="off" required>
-    year <input value='{{movie.year}}' type="text" name="year" autocomplete="off" required>
-    <input class="but" type="submit" name='submit' value="修改">
-</form>
-{%endblock%}
