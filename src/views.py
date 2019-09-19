@@ -1,88 +1,8 @@
-from flask import Flask , render_template,request,url_for,redirect,flash
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
-import sys
-import click
-from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
-app = Flask(__name__)
+from src import app,db
+from src.models import Movie,User
+from flask_login import login_required,LoginManager
+from flask import render_template,request,url_for,redirect,flash
 
-WIN=sys.platform.startswith('win')
-if WIN:
-    prefix='sqlite:///'
-else:
-    prefix='sqlite:////'
-app.config['SQLALCHEMY_DATABASE_URI']=prefix+os.path.join(app.root_path,'data.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
-app.config['SECRET_KEY'] = '123456'
-db= SQLAlchemy(app)
-login_manager=LoginManager(app)
-login_manager.login_view = 'login'
-class User(db.Model,UserMixin):
-    id = db.Column(db.Integer,primary_key=True) #主键
-    username = db.Column(db.String(20))
-    name = db.Column(db.String(20)) #名字
-    password_hash = db.Column(db.String(128)) # hash散列值
-    def set_password(self,password):
-        self.password_hash=generate_password_hash(password)
-    def validate_password(self,password):
-        return check_password_hash(self.password_hash,password)
-class Movie(db.Model):
-    id = db.Column(db.Integer, primary_key=True) #主键
-    title = db.Column(db.String(20)) #电影标题
-    year = db.Column(db.String(4)) # 电影年份
-
-@app.cli.command()
-@click.option('--drop',is_flag=True,help='Create after drop.') #设置选项
-def initdb(drop):
-    """Initialize the database."""
-    if drop:
-        db.drop_all()
-    db.create_all()
-    click.echo('Initialized database.') #输出提示信息
-
-
-@app.cli.command()
-def forge():
-    """Generate fake data"""
-    db.create_all()
-    name = "he hong"
-    movies =[
-        {"title":'放牛娃的春天','year':'2001'},
-        {"title":'王二小','year':'1993'},
-        {"title":'炮兵突击','year':'2003'}
-    ]
-    user = User(name=name)
-    db.session.add(user)
-    for m in movies:
-        movie=Movie(title=m['title'],year=m['year'])
-        db.session.add(movie)
-    db.session.commit()
-    click.echo('Done')
-
-@app.cli.command()
-@click.option('--username',prompt=True,help='The username to login')
-@click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True, help='The password used to login.')
-def admin(username, password):
-    """Create User"""
-    db.create_all()
-    user=User.query.first()
-    if user is not None:
-        click.echo('Updating user....')
-        user.username=username
-        user.set_password(password)
-    else:
-        click.echo('Creating user...')
-        user = User(username=username,name='admin')
-        user.set_password(password)
-        db.session.add(user)
-    db.session.commit()
-    click.echo('Done')
-# 模版上下文处理函数
-@app.context_processor
-def inject_user():
-    user = User.query.first()
-    return dict(user=user)
 @app.route('/',methods=['GET','POST'])
 def index():
     if request.method=="POST":
@@ -137,10 +57,6 @@ def delete(movie_id):
     flash('Item deleted.')
     return redirect(url_for('index'))  # 重定向回主页
 
-@login_manager.user_loader
-def load_user(user_id):
-    user= User.query.get(int(user_id))
-    return user
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -180,12 +96,7 @@ def setting():
         if not name or len(name) > 20:
             flash('Invalid input.')
             return redirect(url_for('setting'))
-
         current_user.name = name
-        # current_user 会返回当前登录用户的数据库记录对象
-        # 等同于下面的用法
-        # user = User.query.first()
-        # user.name = name
         db.session.commit()
         flash('Settings updated.')
         return redirect(url_for('index'))
