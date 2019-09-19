@@ -1,9 +1,0 @@
-{% extends 'base.html' %}
-{% block content %}
-<h3>Setting</h3>
-
-<form method="post">
-    name <input value="{{ current_user.name }}"  type="text" name="name" autocomplete="off" required>
-    <input class="but" type="submit" name='submit' value="login">
-</form>
-{%endblock%}
